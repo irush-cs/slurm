@@ -104,6 +104,13 @@ is a '|'. This option is ignored if \f3\-p\fP or \f3\-P\fP options
 are not specified.
 
 .TP
+\f3\-\-escape\-delimiter\fP
+With the \f3-p\fP or \f3-P\fP options causes both the delimiter (default
+is '|') and '\\' to be escaped on text fields. E.g. on JobName. If
+\f3\-\-delimiter\fP is used and longer than one character, only a single '\\'
+prefix is used.
+
+.TP
 \f3\-D\fP\f3,\fP \f3\-\-duplicates\fP
 If Slurm job ids are reset, some job numbers will probably appear more
 than once in the accounting log file but refer to different jobs.

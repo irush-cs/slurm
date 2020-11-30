@@ -43,6 +43,7 @@
 int print_fields_parsable_print = 0;
 int print_fields_have_header = 1;
 char *fields_delimiter = NULL;
+bool escape_delimiter = false;
 
 extern void destroy_print_field(void *object)
 {
@@ -130,14 +131,50 @@ extern void print_fields_str(print_field_t *field, char *value, int last)
 	} else
 		print_this = value;
 
-	if (print_fields_parsable_print == PRINT_FIELDS_PARSABLE_NO_ENDING
-	   && last)
-		printf("%s", print_this);
-	else if (print_fields_parsable_print && !fields_delimiter)
-		printf("%s|", print_this);
-	else if (print_fields_parsable_print && fields_delimiter)
-		printf("%s%s", print_this, fields_delimiter);
-	else {
+	if (print_fields_parsable_print) {
+		char *delimiter = fields_delimiter ? fields_delimiter : "|";
+		if (escape_delimiter) {
+			int this_len = strlen(print_this);
+			char *current_str = xmalloc(this_len * 2 + 1);
+			char *out_str = xmalloc(this_len * 2 + 1);
+			strcpy(current_str, print_this);
+			char* to_escape[] = {"\\", delimiter, 0};
+			char** escape = to_escape;
+			while (*escape) {
+				char *tmp;
+				char *out_p = out_str;
+				*out_p = 0;
+				char *current_p = current_str;
+				while ((tmp = strstr(current_p, *escape))) {
+					int escape_len = strlen(*escape);
+					memcpy(out_p, current_p,
+						tmp - current_p);
+					out_p += tmp - current_p;
+					*out_p++ = '\\';
+					memcpy(out_p, *escape, escape_len);
+					out_p += escape_len;
+					current_p = tmp + escape_len;
+					*out_p = 0;
+				}
+				xstrcat(out_p, current_p);
+				strcpy(current_str, out_str);
+				++escape;
+			}
+			if (print_fields_parsable_print
+				== PRINT_FIELDS_PARSABLE_NO_ENDING && last)
+				printf("%s", out_str);
+			else
+				printf("%s%s", out_str, delimiter);
+			xfree(out_str);
+			xfree(current_str);
+		} else {
+			if (print_fields_parsable_print
+				== PRINT_FIELDS_PARSABLE_NO_ENDING && last)
+				printf("%s", print_this);
+			else
+				printf("%s%s", print_this, delimiter);
+		}
+	} else {
 		if (value) {
 			int len = strlen(value);
 			memcpy(&temp_char, value, MIN(len, abs_len) + 1);

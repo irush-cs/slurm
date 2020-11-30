@@ -55,6 +55,7 @@
 #define OPT_LONG_FEDR      0x105
 #define OPT_LONG_WHETJOB   0x106
 #define OPT_LONG_LOCAL_UID 0x107
+#define OPT_LONG_ESCAPE_DELIMITER 0x108
 
 #define JOB_HASH_SIZE 1000
 
@@ -344,6 +345,12 @@ sacct [<OPTION>]                                                            \n \
      -e, --helpformat:                                                      \n\
 	           Print a list of fields that can be specified with the    \n\
 	           '--format' option                                        \n\
+         --escape-delimiter:                                                \n\
+                   With the -p or -P options causes both the delimiter      \n\
+                   (default is \"|\") and \"\\\" to be escaped on text      \n\
+                   fields. E.g. on JobName. If --delimiter is used and      \n\
+                   longer than one character, only a single \"\\\" prefix   \n\
+                   is used.                                                 \n\
      -E, --endtime:                                                         \n\
                    Select jobs eligible before this time.  If states are    \n\
                    given with the -s option return jobs in this state before\n\
@@ -700,6 +707,7 @@ extern void parse_command_line(int argc, char **argv)
                 {"constraints",    required_argument, 0,    'C'},
                 {"delimiter",      required_argument, 0,    OPT_LONG_DELIMITER},
                 {"duplicates",     no_argument,       0,    'D'},
+                {"escape-delimiter", no_argument,     0,    OPT_LONG_ESCAPE_DELIMITER},
                 {"federation",     no_argument,       0,    OPT_LONG_FEDR},
                 {"helpformat",     no_argument,       0,    'e'},
                 {"help-fields",    no_argument,       0,    'e'},
@@ -808,6 +816,9 @@ extern void parse_command_line(int argc, char **argv)
 			break;
 		case 'e':
 			params.opt_help = 2;
+			break;
+		case OPT_LONG_ESCAPE_DELIMITER:
+			escape_delimiter = true;
 			break;
 		case 'E':
 			job_cond->usage_end = parse_time(optarg, 1);
